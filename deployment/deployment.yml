@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: okeydokey
+  labels:
+    app: okeydokey
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: okeydokey
+  template:
+    metadata:
+      labels:
+        app: okeydokey
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: main
+        image: $IMAGE_PATH
+        ports:
+        - containerPort: 5000
+  minReadySeconds: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1

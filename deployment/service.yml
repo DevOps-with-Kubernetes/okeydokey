@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: okeydokey-svc
+  labels:
+    app: okeydokey
+spec:
+  selector:
+    app: okeydokey
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+      name: http

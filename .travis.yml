@@ -1,0 +1,51 @@
+sudo: true
+if:
+  branch != "config"
+
+language: minimal
+dist: xenial
+env:
+  # $CI_ENV_REGISTRY_USER, $CI_ENV_REGISTRY_PASS, and $GH_DEPLOYKEY should be set beforehand
+  global:
+  - DOCKER_REPO=devopswithkubernetes/okeydokey
+  - BUILD_IMAGE_PATH=${DOCKER_REPO}:build-${TRAVIS_COMMIT}
+  - RELEASE_IMAGE_PATH=${DOCKER_REPO}:${TRAVIS_TAG}
+
+script:
+# the only line for building the image. Makefile is also a common pattern for more general purposes.
+- docker build -t my-app .
+
+# the following lines are to verify if the built image works as expected
+# Here the criteria of our app is whether it returns 200 code
+- docker run --rm --name app -dp 5000:5000 my-app
+- sleep 10
+- CODE=$(curl -IXGET -so /dev/null -w "%{http_code}" localhost:5000)
+- '[ ${CODE} -eq 200 ] && echo "Image is OK"'
+- docker stop app
+
+after_success:
+- docker login -u ${CI_ENV_REGISTRY_USER} -p "${CI_ENV_REGISTRY_PASS}"
+# push to release path if the commit refers to a release tag, otherwise to the build path
+- |
+  if [[ ${TRAVIS_TAG} =~ ^v.*$ ]]; then
+    docker tag my-app ${RELEASE_IMAGE_PATH}
+    docker push ${RELEASE_IMAGE_PATH}
+  else
+    docker tag my-app ${BUILD_IMAGE_PATH}
+    docker push ${BUILD_IMAGE_PATH}
+  fi
+
+deploy:
+  provider: script
+  script: >-
+    export GH_DEPLOYKEY=${GH_DEPLOYKEY} &&
+    export COMMIT=build-${TRAVIS_COMMIT} &&
+    export TARGET_FILE=deployment/deployment.yml &&
+    export TARGET_REPO=git@github.com:DevOps-with-Kubernetes/okeydokey.git &&
+    export RELEASE_IMAGE_PATH=${RELEASE_IMAGE_PATH} &&
+    export BRANCH=config &&
+    deployment/update-config.sh
+
+  on:
+    tags: true
+    condition: "${TRAVIS_TAG} =~ ^v.*$"
