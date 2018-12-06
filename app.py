@@ -32,7 +32,7 @@ class MyMsgHandler(BaseHTTPRequestHandler):
         return
 
     def log_message(self, format, *args):
-        print("{0:6f} - {1}".format(time.time(), *args))
+        print("{0:.9f} - [app] {1}".format(time.time(), *args))
         return
 
 
@@ -42,11 +42,11 @@ class MyApp(object):
         self.httpd = HTTPServer(('0.0.0.0', 5000), MyMsgHandler)
 
     def run(self):
-        print('starting server at {0:6f}'.format(time.time()))
+        print('{0:.9f} - [app] starting server.'.format(time.time()))
         self.httpd.serve_forever()
 
     def stop(self):
-        print('stopping server at {0:6f}'.format(time.time()))
+        print('{0:.9f} - [app] stopping server.'.format(time.time()))
         threading.Thread(target=self.httpd.shutdown).start()
 
 if __name__ == '__main__':
