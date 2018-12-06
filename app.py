@@ -54,4 +54,6 @@ if __name__ == '__main__':
         app.stop()
     app = MyApp()
     signal.signal(signal.SIGTERM, graceful_exit_handler)
+    signal.signal(signal.SIGINT, graceful_exit_handler)
+    signal.signal(signal.SIGQUIT, graceful_exit_handler)
     app.run()
