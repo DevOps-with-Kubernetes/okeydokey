@@ -17,7 +17,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: main
-        image: devopswithkubernetes/okeydokey:v0.0.3
+        image: devopswithkubernetes/okeydokey:v0.0.4
         ports:
         - containerPort: 5000
   minReadySeconds: 2
